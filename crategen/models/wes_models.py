@@ -4,16 +4,26 @@ Each model in this module conforms to the corresponding WES model names as speci
 This module provides Pydantic models for the Workflow Execution Service (WES) schema,
 supporting validation, serialization, and deserialization of WES data structures.
 """
+<<<<<<< HEAD
 from datetime import datetime
+=======
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
 from enum import Enum
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field, root_validator, validator
+<<<<<<< HEAD
 
 from crategen.converters.utils import convert_to_iso8601
 
 
 class State(str, Enum):
+=======
+from rfc3339_validator import validate_rfc3339  # type: ignore
+
+
+class WESState(str, Enum):
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     """Enumeration of workflow states in the Workflow Execution Service (WES).
     
     These states represent the different stages a workflow can be in during its lifecycle.
@@ -61,7 +71,11 @@ class WESOutputs(BaseModel):
     name: str
 
 
+<<<<<<< HEAD
 class Log(BaseModel):
+=======
+class WESLog(BaseModel):
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     """
     Represents a run log in the Workflow Execution Service (WES).
 
@@ -69,8 +83,13 @@ class Log(BaseModel):
 
     - **name** (`Optional[str]`): The task or workflow name.
     - **cmd** (`Optional[list[str]]`): The command line that was executed.
+<<<<<<< HEAD
     - **start_time** (`Optional[str]`): When the command started executing, in ISO 8601 format.
     - **end_time** (`Optional[str]`): When the command stopped executing, in ISO 8601 format.
+=======
+    - **start_time** (`Optional[str]`): When the command started executing, in RFC 3339 format.
+    - **end_time** (`Optional[str]`): When the command stopped executing, in RFC 3339 format.
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     - **stdout** (`Optional[str]`): A URL to retrieve standard output logs of the workflow run or task.
     - **stderr** (`Optional[str]`): A URL to retrieve standard error logs of the workflow run or task.
     - **exit_code** (`Optional[int]`): The exit code of the program.
@@ -80,14 +99,20 @@ class Log(BaseModel):
     """
 
     name: Optional[str] = None
+<<<<<<< HEAD
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
+=======
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     cmd: Optional[List[str]] = None
     stdout: Optional[str] = None
     stderr: Optional[str] = None
     exit_code: Optional[int] = None
     system_logs: Optional[List[str]] = None
 
+<<<<<<< HEAD
     @validator("start_time", "end_time")
     def validate_datetime(cls, value):
         """Validate and convert datetime values to RFC3339/ISO8601 format.
@@ -112,6 +137,19 @@ class Log(BaseModel):
 
 
 class TaskLog(Log):
+=======
+    @validator("start_time", "end_time", allow_reuse=True)
+    def validate_datetime(cls, value, field):
+        """Check correct datetime format is RFC 3339"""
+        if value and not validate_rfc3339(value):
+            raise ValueError(
+                f"The '{field.name}' property must be in the RFC 3339 format"
+            )
+        return value
+
+
+class WESTaskLog(WESLog):
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     """
     Represents a task log in the Workflow Execution Service (WES).
 
@@ -136,7 +174,11 @@ class TaskLog(Log):
     name: str = Field(...)
 
 
+<<<<<<< HEAD
 class RunRequest(BaseModel):
+=======
+class WESRunRequest(BaseModel):
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     """
     Represents a workflow request in WES.
 
@@ -195,12 +237,21 @@ class WESData(BaseModel):
     **Attributes:**
 
     - **run_id** (`str`): The unique identifier for the WES run.
+<<<<<<< HEAD
     - **request** (`Optional[RunRequest]`): The request associated with the WES run.
     - **state** (`Optional[State]`): The state of the WES run.
     - **run_log** (`Optional[Log]`): The log of the WES run.
     - **task_logs_url** (`Optional[str]`): A reference to the complete url which may be used 
       to obtain a paginated list of task logs for this workflow.
     - **task_logs** (`Optional[list[Log | TaskLog] | None]`): The logs of individual tasks within the run.
+=======
+    - **request** (`Optional[WESRunRequest]`): The request associated with the WES run.
+    - **state** (`Optional[WESState]`): The state of the WES run.
+    - **run_log** (`Optional[WESLog]`): The log of the WES run.
+    - **task_logs_url** (`Optional[str]`): A reference to the complete url which may be used 
+      to obtain a paginated list of task logs for this workflow.
+    - **task_logs** (`Optional[list[WESLog | WESTaskLog] | None]`): The logs of individual tasks within the run.
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
       This attribute is deprecated.
     - **outputs** (`dict[str, str]`): The outputs of the WES run.
 
@@ -208,11 +259,19 @@ class WESData(BaseModel):
     """
 
     run_id: str
+<<<<<<< HEAD
     request: Optional[RunRequest] = None
     state: Optional[State] = None
     run_log: Optional[Log] = None
     task_logs_url: Optional[str] = None
     task_logs: Optional[List[Union[Log, TaskLog]]] = None
+=======
+    request: Optional[WESRunRequest] = None
+    state: Optional[WESState] = None
+    run_log: Optional[WESLog] = None
+    task_logs_url: Optional[str] = None
+    task_logs: Optional[List[Union[WESLog, WESTaskLog]]] = None
+>>>>>>> e2e7014 (feat: add WES models with unit tests)
     outputs: dict[str, str] = {}
 
     @root_validator
