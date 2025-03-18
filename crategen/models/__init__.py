@@ -17,8 +17,17 @@ from .tes_models import (
     TESState,
     TESTaskLog,
 )
+from .wes_models import (
+    State,
+    WESOutputs,
+    Log,
+    TaskLog,
+    RunRequest,
+    WESData,
+)
 
 __all__ = [
+    # TES Models
     "TESData",
     "TESInput",
     "TESOutput",
@@ -29,4 +38,12 @@ __all__ = [
     "TESOutputFileLog",
     "TESFileType",
     "TESState",
+    
+    # WES Models
+    "State",
+    "WESOutputs",
+    "Log",
+    "TaskLog", 
+    "RunRequest",
+    "WESData",
 ]
