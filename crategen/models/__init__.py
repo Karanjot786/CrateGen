@@ -18,21 +18,12 @@ from .tes_models import (
     TESTaskLog,
 )
 from .wes_models import (
-<<<<<<< HEAD
-    State,
-    WESOutputs,
-    Log,
-    TaskLog,
-    RunRequest,
-    WESData,
-=======
     WESData,
     WESLog,
     WESOutputs,
     WESRunRequest,
     WESState,
     WESTaskLog,
->>>>>>> e2e7014 (feat: add WES models with unit tests)
 )
 
 __all__ = [
@@ -49,18 +40,10 @@ __all__ = [
     "TESState",
     
     # WES Models
-<<<<<<< HEAD
-    "State",
-    "WESOutputs",
-    "Log",
-    "TaskLog", 
-    "RunRequest",
-=======
     "WESState",
     "WESOutputs",
     "WESLog",
     "WESTaskLog", 
     "WESRunRequest",
->>>>>>> e2e7014 (feat: add WES models with unit tests)
     "WESData",
 ]
