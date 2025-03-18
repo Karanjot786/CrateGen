@@ -10,6 +10,9 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, Field, root_validator, validator
 from rfc3339_validator import validate_rfc3339  # type: ignore
 
+# Define the maximum number of system logs allowed
+MAX_SYSTEM_LOGS = 2
+
 
 class WESState(str, Enum):
     """Enumeration of workflow states in the Workflow Execution Service (WES).
@@ -72,7 +75,7 @@ class WESLog(BaseModel):
     - **stdout** (`Optional[str]`): A URL to retrieve standard output logs of the workflow run or task.
     - **stderr** (`Optional[str]`): A URL to retrieve standard error logs of the workflow run or task.
     - **exit_code** (`Optional[int]`): The exit code of the program.
-    - **system_logs** (`optional[list[str]]`):  Any logs the system decides are relevant, which are not tied directly to a workflow.
+    - **system_logs** (`Optional[list[str]]`): Any logs the system decides are relevant, which are not tied directly to a workflow.
 
     **Reference:** https://ga4gh.github.io/workflow-execution-service-schemas/docs/#tag/runlog_model
     """
@@ -95,6 +98,13 @@ class WESLog(BaseModel):
             )
         return value
 
+    @validator("system_logs", pre=True, always=True)
+    def truncate_system_logs(cls, value):
+        """Truncate the system_logs list to at most MAX_SYSTEM_LOGS entries."""
+        if value is None:
+            return value
+        return value[:MAX_SYSTEM_LOGS] if len(value) > MAX_SYSTEM_LOGS else value
+
 
 class WESTaskLog(WESLog):
     """
@@ -109,7 +119,7 @@ class WESTaskLog(WESLog):
     - **stdout** (`Optional[str]`): A URL to retrieve standard output logs of the workflow run or task.
     - **stderr** (`Optional[str]`): A URL to retrieve standard error logs of the workflow run or task.
     - **exit_code** (`Optional[int]`): The exit code of the program.
-    - **system_logs** (`Optional[list[str]]`):  Any logs the system decides are relevant, which are not tied directly to a workflow.
+    - **system_logs** (`Optional[list[str]]`): Any logs the system decides are relevant, which are not tied directly to a workflow.
     - **id** (`str`): A unique identifier which maybe used to reference the task.
     - **tes_uri** (`Optional[str]`): An optional URL pointing to an extended task definition defined by a TES api.
 
