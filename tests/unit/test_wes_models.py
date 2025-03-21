@@ -133,6 +133,21 @@ class TestWESLog:
         assert log.exit_code == 0
         assert len(log.system_logs) == MAX_SYSTEM_LOGS
 
+    def test_system_logs_truncation(self):
+        """Test that system_logs are truncated when exceeding MAX_SYSTEM_LOGS"""
+        excess_logs = [f"Log entry {i}" for i in range(MAX_SYSTEM_LOGS + 3)]  # Create more logs than MAX_SYSTEM_LOGS
+        log = WESLog(
+            name="workflow_456",
+            system_logs=excess_logs
+        )
+        
+        # Verify truncation
+        assert len(log.system_logs) == MAX_SYSTEM_LOGS
+        assert log.system_logs == excess_logs[:MAX_SYSTEM_LOGS]  # Should keep only first MAX_SYSTEM_LOGS entries
+        assert "Log entry 0" in log.system_logs  # First entry should be present
+        assert "Log entry 1" in log.system_logs  # Second entry should be present
+        assert f"Log entry {MAX_SYSTEM_LOGS + 2}" not in log.system_logs  # Last excess entry should be truncated
+
     @pytest.mark.parametrize("invalid_datetime", invalid_datetime_strings)
     def test_log_datetime_validation(self, invalid_datetime):
         """Test datetime validation in WESLog"""
@@ -308,7 +323,10 @@ class TestWESData:
             task_logs=[task_log],
             outputs={
                 "aligned_bam": "https://storage.googleapis.com/workflow-outputs/run123/aligned.bam",
-                "variants_vcf": "https://storage.googleapis.com/workflow-outputs/run123/variants.vcf"
+                "variants_vcf": "s3://my-bucket/outputs/variants.vcf",
+                "local_log": "file:///tmp/workflow123/run.log",
+                "metrics": "/absolute/path/to/metrics.txt",
+                "relative_output": "./results/summary.txt"
             }
         )
         
@@ -318,7 +336,41 @@ class TestWESData:
         assert wes_data.run_log == run_log
         assert wes_data.task_logs_url.startswith("https://")
         assert wes_data.task_logs == [task_log]
-        assert all(url.startswith("https://") for url in wes_data.outputs.values())
+        
+        # Test different URL schemes in outputs
+        assert wes_data.outputs["aligned_bam"].startswith("https://")
+        assert wes_data.outputs["variants_vcf"].startswith("s3://")
+        assert wes_data.outputs["local_log"].startswith("file://")
+        assert wes_data.outputs["metrics"].startswith("/")
+        assert wes_data.outputs["relative_output"].startswith(".")
+
+    def test_outputs_with_different_url_schemes(self):
+        """Test that WESData accepts outputs with different URL schemes and path types"""
+        output_urls = {
+            "http_url": "http://example.com/output.txt",
+            "https_url": "https://storage.googleapis.com/output.txt",
+            "s3_url": "s3://my-bucket/output.txt",
+            "gs_url": "gs://my-bucket/output.txt",
+            "file_url": "file:///local/path/output.txt",
+            "absolute_path": "/absolute/path/output.txt",
+            "relative_path": "./relative/path/output.txt"
+        }
+        
+        wes_data = WESData(run_id="wes-run-123", outputs=output_urls)
+        
+        # Verify all output URLs are preserved
+        assert wes_data.outputs["http_url"].startswith("http://")
+        assert wes_data.outputs["https_url"].startswith("https://")
+        assert wes_data.outputs["s3_url"].startswith("s3://")
+        assert wes_data.outputs["gs_url"].startswith("gs://")
+        assert wes_data.outputs["file_url"].startswith("file://")
+        assert wes_data.outputs["absolute_path"].startswith("/")
+        assert wes_data.outputs["relative_path"].startswith(".")
+        
+        # Verify we can retrieve all outputs
+        assert len(wes_data.outputs) == len(output_urls)
+        assert all(key in wes_data.outputs for key in output_urls)
+        assert all(wes_data.outputs[key] == value for key, value in output_urls.items())
 
     def test_task_logs_deprecation_warning(self):
         """Test deprecation warning when task_logs is used"""
