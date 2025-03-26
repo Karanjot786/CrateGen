@@ -18,12 +18,11 @@ from .tes_models import (
     TESTaskLog,
 )
 from .wes_models import (
-    WESData,
-    WESLog,
-    WESOutputs,
-    WESRunRequest,
-    WESState,
-    WESTaskLog,
+    Log,
+    Run,
+    RunRequest,
+    State,
+    TaskLog,
 )
 
 __all__ = [
@@ -40,10 +39,9 @@ __all__ = [
     "TESState",
     
     # WES Models
-    "WESState",
-    "WESOutputs",
-    "WESLog",
-    "WESTaskLog", 
-    "WESRunRequest",
-    "WESData",
+    "State",
+    "Log",
+    "TaskLog", 
+    "RunRequest",
+    "Run",
 ]
